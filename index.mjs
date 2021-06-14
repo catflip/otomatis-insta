@@ -42,6 +42,15 @@ import  get  from 'request-promise'; // request is already declared as a depende
     console.log(publishResult.status); // publishResult.status should be "ok"
   }catch(e){
 console.log(e.message)
+const TelegramBot = require('node-telegram-bot-api');
+
+// replace the value below with the Telegram token you receive from @BotFather
+const token = process.env.TOKEN;
+
+// Create a bot that uses 'polling' to fetch new updates
+const bot = new TelegramBot(token, { polling: false });
+
+bot.sendMessage(process.env.TELEGRAM_USER, e.message);
   }
 
 })();
