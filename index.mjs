@@ -18,9 +18,10 @@ import  get  from 'request-promise'; // request is already declared as a depende
     }
     ig.state.generateDevice(process.env.USERNAME);
     ig.state.proxyUrl = process.env.IG_PROXY;
+    await ig.simulate.preLoginFlow();
     const auth = await ig.account.login(process.env.USERNAME, process.env.PASSWORD);
     console.log("soklin");
-  
+    process.nextTick(async () => await ig.simulate.postLoginFlow());
     // getting random square image from internet as a Buffer
     const imageBuffer = await get({
       url: 'https://source.unsplash.com/10x10/?nature', // random picture with 800x800 size
