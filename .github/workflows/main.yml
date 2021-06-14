@@ -30,5 +30,7 @@ jobs:
         PASSWORD: ${{ secrets.PASSWORD }}
         USERNAME1: ${{ secrets.USERNAME1 }}
         USERNAME2: ${{ secrets.USERNAME2 }}
+        TOKEN_TELEGRAM: ${{ secrets.TOKEN_TELEGRAM }}
+        TELEGRAM_USER: ${{ secrets.TELEGRAM_USER }}
    
 
