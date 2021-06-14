@@ -1,1 +1,34 @@
+name: SCHEDULE
+
+on: 
+ push: 
+  branches: 
+   - main  
+ schedule:
+   - cron : '0 * * * *'
+
+jobs:
+  store:
+
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+    - name: Set up nodejs and install dependencies
+      uses: actions/setup-node@v1
+      with:
+       node-version: '12'
+    - name: install yarn  
+      run: npm install -g yarn
+    - name: install dependency  
+      run: yarn
+    - name: run script
+      run: node index.mjs
+      env:
+        USERNAME: ${{ secrets.USERNAME }}
+        PASSWORD: ${{ secrets.PASSWORD }}
+        USERNAME1: ${{ secrets.USERNAME1 }}
+        USERNAME2: ${{ secrets.USERNAME2 }}
+   
 
