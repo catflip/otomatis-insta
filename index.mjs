@@ -1,6 +1,6 @@
 import { IgApiClient } from 'instagram-private-api';
 import  get  from 'request-promise'; // request is already declared as a dependency of the library
-
+import TelegramBot from 'node-telegram-bot-api';
 (async () => {
   try{
     const ig = new IgApiClient();
@@ -42,7 +42,7 @@ import  get  from 'request-promise'; // request is already declared as a depende
     console.log(publishResult.status); // publishResult.status should be "ok"
   }catch(e){
 console.log(e.message)
-const TelegramBot = require('node-telegram-bot-api');
+
 
 // replace the value below with the Telegram token you receive from @BotFather
 const token = process.env.TOKEN;
