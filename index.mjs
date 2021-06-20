@@ -1,6 +1,9 @@
+import dotenv from 'dotenv'
+dotenv.config({path:'/home/squadpolinema/otomatis-insta/.env.local'})
 import { IgApiClient } from 'instagram-private-api';
 import  get  from 'request-promise'; // request is already declared as a dependency of the library
 import TelegramBot from 'node-telegram-bot-api';
+import fs from 'fs';
 (async () => {
   try{
     const ig = new IgApiClient();
@@ -18,11 +21,49 @@ import TelegramBot from 'node-telegram-bot-api';
     }
     ig.state.generateDevice(process.env.USERNAME);
     ig.state.proxyUrl = process.env.IG_PROXY;
-    await ig.simulate.preLoginFlow();
-    const auth = await ig.account.login(process.env.USERNAME, process.env.PASSWORD);
-    console.log("soklin");
-    process.nextTick(async () => await ig.simulate.postLoginFlow());
-    // getting random square image from internet as a Buffer
+	  const saveSession = async (data) => {
+fs.writeFileSync("/home/squadpolinema/otomatis-insta/igSessionStore.json", JSON.stringify(data), "utf-8");
+};
+	  const loadSession = async () => {
+  const sessionFile = fs.readFileSync("/home/squadpolinema/otomatis-insta/igSessionStore.json", "utf-8");
+  
+  await ig.state.deserialize(sessionFile);
+  
+  ig.request.end$.subscribe(async () => {
+    const serialized = await ig.state.serialize();
+    delete serialized.constants;
+    await saveSession(serialized);
+  });
+  const pk = ig.state.cookieUserId;
+  return pk;
+};
+const newLogin = async () => {
+  
+  
+  const auth = await ig.account.login(process.env.USERNAME, process.env.PASSWORD);
+
+  ig.request.end$.subscribe(async () => {
+	  
+    const serialized = await ig.state.serialize();
+    delete serialized.constants;
+    await saveSession(serialized);
+  });
+  return auth.pk;
+};
+	  const loginFlow = async () => {
+	
+  const igSession = fs.existsSync("/home/squadpolinema/otomatis-insta/igSessionStore.json");
+  if (igSession) {
+    const auth = await loadSession();
+    return auth;
+  } else {
+	  
+    const auth = await newLogin();
+    return auth;
+  }
+};
+const auth = await loginFlow();
+       // getting random square image from internet as a Buffer
     const imageBuffer = await get({
       url: 'https://source.unsplash.com/10x10/?nature', // random picture with 800x800 size
       encoding: null, // this is required, only this way a Buffer is returned
