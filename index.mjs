@@ -19,7 +19,7 @@ function getRandomInt(min, max) {
 
 const surat = await quran.getSurah(getRandomInt(1,114))
 const ayat = surat.verses[getRandomInt(0,surat.surah_verse_count-1)]
-const terakhir = ayat.verse_arabic + " " + surat.surah_id + ":" + ayat.verse_number
+const terakhir = ayat.verse_arabic + " - " + surat.surah_id + ":" + ayat.verse_number
     return terakhir
     
 	  
