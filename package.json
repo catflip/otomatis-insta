@@ -6,7 +6,8 @@
   "dependencies": {
     "dotenv": "^10.0.0",
     "instagram-private-api": "^1.45.1",
-    "node-telegram-bot-api": "^0.53.0"
+    "node-telegram-bot-api": "^0.53.0",
+    "quran-kemenag": "^1.0.12"
   },
   "browserslist": {
     "production": [

@@ -868,6 +868,11 @@ qs@~6.5.2:
   resolved "https://registry.yarnpkg.com/qs/-/qs-6.5.2.tgz"
   integrity sha512-N5ZAX4/LxJmF+7wN74pUD6qAh9/wnvdQcjq9TZjevvXzSUo7bfmw91saqMjzGS2xq91/odN2dW/WOl7qQHNDGA==
 
+quran-kemenag@^1.0.12:
+  version "1.0.12"
+  resolved "https://registry.yarnpkg.com/quran-kemenag/-/quran-kemenag-1.0.12.tgz#812304a41463d7ca391e332e8dda514c9b92c5d7"
+  integrity sha512-DKJFwYjd2l7GrRYvtiBCDk/3zBJp8djmEVLZIa+Qfsq8SdH0AwEXIX8OV38yrR7ZowGeQ+LR3BZVyOK9qynykQ==
+
 re2@1.15.4:
   version "1.15.4"
   resolved "https://registry.yarnpkg.com/re2/-/re2-1.15.4.tgz#2ffc3e4894fb60430393459978197648be01a0a9"

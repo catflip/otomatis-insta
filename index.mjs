@@ -4,10 +4,26 @@ import { IgApiClient } from 'instagram-private-api';
 import  get  from 'request-promise'; // request is already declared as a dependency of the library
 import TelegramBot from 'node-telegram-bot-api';
 import fs from 'fs';
+import QuranKemenag from "quran-kemenag"
 (async () => {
   try{
     const ig = new IgApiClient();
     const clamp = (value, min, max) => Math.max(Math.min(value, max), min);
+	  async function generateCaption(){
+const quran = new QuranKemenag();	
+function getRandomInt(min, max) {
+    min = Math.ceil(min);
+    max = Math.floor(max);
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+const surat = await quran.getSurah(getRandomInt(1,114))
+const ayat = surat.verses[getRandomInt(0,surat.surah_verse_count-1)]
+const terakhir = ayat.verse_arabic + " " + surat.surah_id + ":" + ayat.verse_number
+    return terakhir
+    
+	  
+	  }
     async function generateUsertagFromName(name, x, y)  {
       // constrain x and y to 0..1 (0 and 1 are not supported)
       x = clamp(x, 0.0001, 0.9999);
@@ -71,6 +87,7 @@ const auth = await loginFlow();
   
     const publishResult = await ig.publish.photo({
       file: imageBuffer, // image buffer, you also can specify image from your disk using fs
+caption:await generateCaption(),
       usertags: {
         in: [
           // tag the user 'instagram' @ (0.5 | 0.5)
