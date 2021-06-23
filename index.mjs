@@ -1,97 +1,65 @@
-import { IgApiClient } from 'instagram-private-api';
-import  get  from 'request-promise'; // request is already declared as a dependency of the library
-import TelegramBot from 'node-telegram-bot-api';
-import fs from 'fs';
-import QuranKemenag from "quran-kemenag"
-import { createClient } from '@supabase/supabase-js'
-import axios from 'axios'
-// Create a single supabase client for interacting with your database 
-const supabase = createClient(process.env.APPID, process.env.APPSECRET);
-async function upload(data){
-  try{
-    const {data:ko}=await axios({
+import dotenv from "dotenv";
+dotenv.config({ path: "/home/rinoa/projects/otomatis-insta/.env.local" });
+import { IgApiClient } from "instagram-private-api";
+import get from "request-promise"; // request is already declared as a dependency of the library
+import TelegramBot from "node-telegram-bot-api";
+import fs from "fs";
+import axios from "axios"
+async function upload(data) {
+  try {
+    const { data: ko } = await axios({
       method: "POST",
       url: `${process.env.APPID}/storage/v1/object/instagram/panda.json`,
       headers: {
         "Content-Length": Buffer.from(JSON.stringify(data)).length,
-        Authorization:
-          "Bearer "+process.env.APPSECRET,
+        Authorization: "Bearer " + process.env.APPSECRET,
       },
       data: Buffer.from(JSON.stringify(data)),
     });
-    return ko
-  }catch(e){
-    return false
+    return ko;
+  } catch (e) {
+    // console.log(e.message)
+    // console.log("upload fail")
+    await deleteBucket()
+    await upload(data)
+    return false;
   }
-  
 }
-async function deleteBucket(){
-  try{
-    const {data:ko}=await axios({
+async function deleteBucket() {
+  try {
+    const { data: ko } = await axios({
       method: "DELETE",
-      url: `${process.env.APPID}/storage/v1/object/instagram`,
+      url: `${process.env.APPID}/storage/v1/object/instagram/panda.json`,
       headers: {
-             Authorization:
-          "Bearer "+process.env.APPSECRET,
+        Authorization: "Bearer " + process.env.APPSECRET,
       },
-      
     });
-    return ko
-  }catch(e){
-    return false
+    return ko;
+  } catch (e) {
+    // console.log("delete fail")
+    return false;
   }
-  
 }
-async function download(){
-  try{
-    const {data:ko}=await axios({
+async function download() {
+  try {
+    const { data: ko } = await axios({
       method: "GET",
       url: `${process.env.APPID}/storage/v1/object/authenticated/instagram/panda.json`,
       headers: {
-        
-        
-        Authorization:
-          "Bearer "+process.env.APPSECRET,
+        Authorization: "Bearer " + process.env.APPSECRET,
       },
-      
     });
     return ko;
-  }catch(e){
-return false
+  } catch (e) {
+    // console.log("download fail")
+    return false;
   }
-  
-
 }
 (async () => {
-  
-  try{
-   
-   
-    const bucketName=process.env.BUCKETNAME
-    const { data:bucket, error } = await supabase
-  .storage
-  .getBucket(bucketName)
-  if(!bucket){
-    await supabase.storage.createBucket(bucketName)
-    } 
-     const ig = new IgApiClient();
+  try {
+    const ig = new IgApiClient();
     const clamp = (value, min, max) => Math.max(Math.min(value, max), min);
-	  async function generateCaption(){
-const quran = new QuranKemenag();	
-function getRandomInt(min, max) {
-    min = Math.ceil(min);
-    max = Math.floor(max);
-    return Math.floor(Math.random() * (max - min + 1)) + min;
-}
-
-const surat = await quran.getSurah(getRandomInt(1,114))
-const ayat = surat.verses[getRandomInt(0,surat.surah_verse_count-1)]
-const terakhir = surat.surah_id + ":" + ayat.verse_number + " - " + ayat.verse_arabic
-    return terakhir
-    
-	  
-	  }
-    async function generateUsertagFromName(name, x, y)  {
+    async function generateUsertagFromName(name, x, y) {
       // constrain x and y to 0..1 (0 and 1 are not supported)
       x = clamp(x, 0.0001, 0.9999);
       y = clamp(y, 0.0001, 0.9999);
@@ -105,62 +73,60 @@ const terakhir = surat.surah_id + ":" + ayat.verse_number + " - " + ayat.verse_a
    
     ig.state.generateDevice(process.env.USERNAME);
     ig.state.proxyUrl = process.env.IG_PROXY;
-   
-	  const saveSession = async (data) => {
-      const ko=await download()
-      if(ko){
-        await deleteBucket();
-        await upload(data);
+    const saveSession = async (data) => {
+      const cek=await download()
+      if(cek){
+await deleteBucket()
+        await upload(data)
       }else{
-        await upload(data);
+        await upload(data)
       }
-    
-};
-	  const loadSession = async () => {
-      const ko=await download()
+      fs.writeFileSync("igSessionStore.json", JSON.stringify(data), "utf-8");
+      return
+    };
+    const loadSession = async () => {
+      const sessionFile = await download();
 
-  await ig.state.deserialize(Buffer.from(JSON.stringify(ko)));
-  
-  ig.request.end$.subscribe(async () => {
-    const serialized = await ig.state.serialize();
-    delete serialized.constants;
-    await saveSession(serialized);
-  });
-  const pk = ig.state.cookieUserId;
-  return pk;
-};
-const newLogin = async () => {
-  
-  
-  const auth = await ig.account.login(process.env.USERNAME, process.env.PASSWORD);
+      await ig.state.deserialize(sessionFile);
 
-  ig.request.end$.subscribe(async () => {
-	  
-    const serialized = await ig.state.serialize();
-    delete serialized.constants;
-    await saveSession(serialized);
-  });
-  return auth.pk;
-};
-	  const loginFlow = async () => {
-	 
-  const igSession =await download()
-  if (igSession) {
-    const auth = await loadSession();
-    return auth;
-  } else {
-	  
-    const auth = await newLogin();
-    return auth;
-  }
-};
-const auth = await loginFlow();
-       // getting random square image from internet as a Buffer
+      ig.request.end$.subscribe(async () => {
+        const serialized = await ig.state.serialize();
+        delete serialized.constants;
+        await saveSession(serialized);
+      });
+      const pk = ig.state.cookieUserId;
+      return pk;
+    };
+    const newLogin = async () => {
+      const auth = await ig.account.login(
+        process.env.USERNAME,
+        process.env.PASSWORD
+      );
+
+      ig.request.end$.subscribe(async () => {
+        const serialized = await ig.state.serialize();
+        delete serialized.constants;
+        await saveSession(serialized);
+      });
+      return auth.pk;
+    };
+    const loginFlow = async () => {
+      const igSession = await download();
+      if (igSession) {
+        const auth = await loadSession();
+        return auth;
+      } else {
+        const auth = await newLogin();
+        return auth;
+      }
+    };
+    const auth = await loginFlow();
+    // getting random square image from internet as a Buffer
     const imageBuffer = await get({
-      url: 'https://source.unsplash.com/10x10/?nature', // random picture with 800x800 size
+      url: "https://source.unsplash.com/10x10/?nature", // random picture with 800x800 size
       encoding: null, // this is required, only this way a Buffer is returned
     });
-  
+
     const publishResult = await ig.publish.photo({
       file: imageBuffer, // image buffer, you also can specify image from your disk using fs
 caption:"keep moving forward",
@@ -172,19 +138,17 @@ caption:"keep moving forward",
         ],
       },
     });
-  
+
     console.log(publishResult.status); // publishResult.status should be "ok"
-  }catch(e){
-console.log(e.message)
+  } catch (e) {
+    console.log(e.message);
 
+    // replace the value below with the Telegram token you receive from @BotFather
+    const token = process.env.TOKEN_TELEGRAM;
 
-// replace the value below with the Telegram token you receive from @BotFather
-const token = process.env.TOKEN_TELEGRAM;
+    // Create a bot that uses 'polling' to fetch new updates
+    const bot = new TelegramBot(token, { polling: false });
 
-// Create a bot that uses 'polling' to fetch new updates
-const bot = new TelegramBot(token, { polling: false });
-
-bot.sendMessage(process.env.TELEGRAM_USER, e.message);
+    bot.sendMessage(process.env.TELEGRAM_USER, e.message);
   }
-
 })();
