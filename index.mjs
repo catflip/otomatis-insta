@@ -1,5 +1,3 @@
-import dotenv from 'dotenv'
-dotenv.config({path:'/home/rinoa/projects/otomatis-insta/.env.local'})
 import { IgApiClient } from 'instagram-private-api';
 import  get  from 'request-promise'; // request is already declared as a dependency of the library
 import TelegramBot from 'node-telegram-bot-api';
